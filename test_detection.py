@@ -2,7 +2,6 @@ import cv2
 from src.detection import detect, draw_boxes
 
 
-
 for name in ["test", "rue"]:
     img = cv2.imread(f"images/{name}.jpg")
     res = detect(img)
