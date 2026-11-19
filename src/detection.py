@@ -11,13 +11,12 @@ def load_model():
     return _model
 
 #Détecte les personnes dans une image et renvoie : combien, avec quelle confiance moyenne, et où (les boîtes)
-def detect(image_bgr, conf_min=0.25):
+def detect(image_bgr, conf_min=0.25, nms_iou=0.5):
     model = load_model()
 
     #classe[0]: classe personne de COCO 
-    # conf_min : jeter les detections en dessous du seuil 
-    # [0] : YOLO renvoie une liste de résultats, un par image. On en envoie une seule.
-    result = model.predict(image_bgr, classes=[0], conf=conf_min, verbose=False)[0]
+    # [0] : YOLO renvoie une liste de résultats, un par image, ici on en envoie une seule.
+    result = model.predict(image_bgr, classes=[0], conf=conf_min,  iou=nms_iou, verbose=False)[0]
     
     boxes = []
     for b in result.boxes : 
@@ -31,7 +30,8 @@ def detect(image_bgr, conf_min=0.25):
     mean_conf = sum(b["conf"] for b in boxes) / count if count > 0 else 0.0
     return {"count": count, "mean_conf": mean_conf, "boxes": boxes}
         
-        
+
+    
 def draw_boxes(image_bgr, boxes):
     img_copy = image_bgr.copy()
 
@@ -39,8 +39,8 @@ def draw_boxes(image_bgr, boxes):
         # conversion en int pour openCV
         x1, y1, x2, y2 = [int(v) for v in b["xyxy"]]
 
-        # Rectangle : image, coin haut-gauche, coin bas-droite, couleur BGR (vert), épaisseur.
-        cv2.rectangle(img_copy, (x1, y1), (x2, y2), (0, 255, 0), 2)
+        # Rectangle : image, coin haut-gauche, coin bas-droite, couleur BGR, épaisseur.
+        cv2.rectangle(img_copy, (x1, y1), (x2, y2), (0, 255, 0), 5)
 
         # Confiance écrite au-dessus de la boîte.
         cv2.putText(

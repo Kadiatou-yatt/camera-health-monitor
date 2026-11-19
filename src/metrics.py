@@ -1,6 +1,4 @@
-def iou(box_a, box_b):
-    # Format attendu : [x_min, y_min, x_max, y_max]
-    
+def iou(box_a, box_b):    
     # Déterminer les coordonnées de la boîte d'intersection
     x_inter_min = max(box_a[0], box_b[0])  
     y_inter_min = max(box_a[1], box_b[1]) 

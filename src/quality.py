@@ -29,3 +29,35 @@ def compute_quality(image_bgr):
     img_quality = {"brightness": gray_brightness, "sharpness": gray_sharpness,"contrast": gray_contrast }
     
     return img_quality
+
+# Seuils indicatifs, calibrés à la main sur mes images de test.
+THRESHOLDS = {"dark": 40, "washed_out": 215, "low_contrast": 25, "blurry": 100}
+
+
+def quality_verdict(q):
+    # Traduit les trois indicateurs en verdict lisible, avec les raisons.
+    b, s, c = q["brightness"], q["sharpness"], q["contrast"]
+
+    # Image quasi noire : on s'arrete
+    if b < THRESHOLDS["dark"] / 2:
+        return "Inexploitable", ["Image quasi noire"]
+
+    reasons = []
+    if b < THRESHOLDS["dark"]:
+        reasons.append("Image trop sombre")
+    elif b > THRESHOLDS["washed_out"]:
+        reasons.append("Image délavée ou surexposée")
+
+    # Contraste et netteté baissent mécaniquement quand l'image s'assombrit.
+    # On ne les juge que si la luminosité est correcte, sinon on compterait deux fois la même cause.
+    if THRESHOLDS["dark"] <= b <= THRESHOLDS["washed_out"]:
+        if c < THRESHOLDS["low_contrast"]:
+            reasons.append("Contraste faible : voile, brume ou poussière possible")
+        if s < THRESHOLDS["blurry"]:
+            reasons.append("Netteté faible : flou probable")
+
+    if not reasons:
+        return "Exploitable", []
+    if len(reasons) == 1:
+        return "Limite", reasons
+    return "Inexploitable", reasons
